@@ -113,6 +113,9 @@ class Animation(object):
         """
         Helper method to add a sphere to the scene.
 
+        Arguments:
+            color: QColor, the color of the sphere's material
+
         Returns:
             the QTransform of the sphere
         """
@@ -133,6 +136,9 @@ class Animation(object):
     def add_cylinder(self, color=util.hsl(0, 0, 50)):
         """
         Helper method to add a cylinder to the scene.
+
+        Arguments:
+            color: QColor, the color of the cylinder's material
 
         Returns:
             the QTransform of the cylinder
@@ -155,6 +161,9 @@ class Animation(object):
         """
         Helper method to add a cone to the scene.
 
+        Arguments:
+            color: QColor, the color of the cone's material
+
         Returns:
             the QTransform of the cone
         """
@@ -175,6 +184,9 @@ class Animation(object):
     def add_plane(self, color=util.hsl(0, 0, 50)):
         """
         Helper method to add a plane to the scene.
+
+        Arguments:
+            color: QColor, the color of the plane's material
 
         Returns:
             the QTransform of the plane
