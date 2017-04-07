@@ -6,7 +6,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QVector3D, QQuaternion
 from PyQt5.Qt3DCore import QEntity, QTransform
 from PyQt5.Qt3DRender import QPointLight
-from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QPlaneMesh, QCylinderMesh, QPhongMaterial
+from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QConeMesh, QPlaneMesh, QCylinderMesh, QPhongMaterial
 from PyQt5.QtQml import QQmlComponent, QQmlEngine
 
 from . import util
@@ -76,9 +76,11 @@ class Animation(object):
             color: QColor, the color of the light
         """
         light_entity = QEntity(self.scene)
+
         light = QPointLight(light_entity)
         light.setColor(color)
         light.setIntensity(intensity)
+
         light_transform = QTransform(self.scene)
         light_transform.setTranslation(position)
         light_entity.addComponent(light)
@@ -92,10 +94,13 @@ class Animation(object):
             the QTransform of the cube
         """
         cube_entity = QEntity(self.scene)
+
         cube_mesh = QCuboidMesh()
         cube_entity.addComponent(cube_mesh)
+
         cube_transform = QTransform(self.scene)
         cube_entity.addComponent(cube_transform)
+
         if not hasattr(self, 'rgb_cube_material'):
             # load material definition from QML
             # this was the easiest way I could find to create a custom shader in Qt3D...
@@ -104,7 +109,7 @@ class Animation(object):
 
         return cube_transform
 
-    def add_sphere(self):
+    def add_sphere(self, color=util.hsl(0, 0, 50)):
         """
         Helper method to add a sphere to the scene.
 
@@ -112,19 +117,62 @@ class Animation(object):
             the QTransform of the sphere
         """
         sphere_entity = QEntity(self.scene)
-        sphere_mesh = QSphereMesh()
 
+        sphere_mesh = QSphereMesh()
         sphere_entity.addComponent(sphere_mesh)
+
         sphere_transform = QTransform(self.scene)
         sphere_entity.addComponent(sphere_transform)
-        if not hasattr(self, 'sphere_material'):
-            self.sphere_material = QPhongMaterial(self.scene)
-            self.sphere_material.setDiffuse(util.hsl(0, 0, 50))
-        sphere_entity.addComponent(self.sphere_material)
+
+        sphere_material = QPhongMaterial(self.scene)
+        sphere_material.setDiffuse(color)
+        sphere_entity.addComponent(sphere_material)
 
         return sphere_transform
 
-    def add_plane(self):
+    def add_cylinder(self, color=util.hsl(0, 0, 50)):
+        """
+        Helper method to add a cylinder to the scene.
+
+        Returns:
+            the QTransform of the cylinder
+        """
+        cylinder_entity = QEntity(self.scene)
+
+        cylinder_mesh = QCylinderMesh()
+        cylinder_entity.addComponent(cylinder_mesh)
+
+        cylinder_transform = QTransform(self.scene)
+        cylinder_entity.addComponent(cylinder_transform)
+
+        cylinder_material = QPhongMaterial(self.scene)
+        cylinder_material.setDiffuse(color)
+        cylinder_entity.addComponent(cylinder_material)
+
+        return cylinder_transform
+
+    def add_cone(self, color=util.hsl(0, 0, 50)):
+        """
+        Helper method to add a cone to the scene.
+
+        Returns:
+            the QTransform of the cone
+        """
+        cone_entity = QEntity(self.scene)
+
+        cone_mesh = QConeMesh()
+        cone_entity.addComponent(cone_mesh)
+
+        cone_transform = QTransform(self.scene)
+        cone_entity.addComponent(cone_transform)
+
+        cone_material = QPhongMaterial(self.scene)
+        cone_material.setDiffuse(color)
+        cone_entity.addComponent(cone_material)
+
+        return cone_transform
+
+    def add_plane(self, color=util.hsl(0, 0, 50)):
         """
         Helper method to add a plane to the scene.
 
@@ -132,19 +180,20 @@ class Animation(object):
             the QTransform of the plane
         """
         plane_entity = QEntity(self.scene)
-        plane_mesh = QPlaneMesh()
 
+        plane_mesh = QPlaneMesh()
         plane_entity.addComponent(plane_mesh)
+
         plane_transform = QTransform(self.scene)
         plane_entity.addComponent(plane_transform)
-        if not hasattr(self, 'plane_material'):
-            self.plane_material = QPhongMaterial(self.scene)
-            self.plane_material.setDiffuse(util.hsl(0, 0, 50))
-        plane_entity.addComponent(self.plane_material)
+
+        plane_material = QPhongMaterial(self.scene)
+        plane_material.setDiffuse(color)
+        plane_entity.addComponent(plane_material)
 
         return plane_transform
 
-    def add_path(self, *pts):
+    def add_path(self, *pts, color=util.hsl(0, 0, 50)):
         """
         Helper method to add a path to the scene.
 
@@ -154,6 +203,9 @@ class Animation(object):
         Returns:
             a list of the entities added to the scene
         """
+        path_material = QPhongMaterial(self.scene)
+        path_material.setDiffuse(color)
+
         # make a bunch of cylinder objects aligned along the path
         entities = []
         prev_pt = None
@@ -163,20 +215,22 @@ class Animation(object):
                     # for each adjacent pair of points that are different
                     # make a cylinder
                     path_entity = QEntity(self.scene)
+
                     path_mesh = QCylinderMesh()
                     path_mesh.setRadius(0.05) # very thin
                     path_mesh.setLength((prev_pt - pt).length()) # length is the distance between the points
                     path_entity.addComponent(path_mesh)
+
                     path_transform = QTransform(self.scene)
                     path_transform.setRotation(QQuaternion.fromDirection(QVector3D(0, 0, -1), prev_pt - pt)) # rotate to point along path
                     path_transform.setTranslation((pt + prev_pt) / 2) # center between points
                     path_entity.addComponent(path_transform)
-                    if not hasattr(self, 'path_material'):
-                        self.path_material = QPhongMaterial(self.scene)
-                        self.path_material.setAmbient(util.hsl(0, 0, 50))
-                    path_entity.addComponent(self.path_material)
+
+                    path_entity.addComponent(path_material)
+
                     entities.append(path_entity)
             prev_pt = pt
+
         return entities
 
     def setup_scene(self, background_color, camera_position, camera_lookat):

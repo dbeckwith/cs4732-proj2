@@ -35,9 +35,16 @@ class Proj2Ani(Animation):
         ground = self.add_plane()
         ground.setScale(10.0)
 
-        self.rig = Rig(Joint(self, 0.06, 0.06, 0.2))
+        self.rig = Rig(Joint(self,
+            length=0.2,
+            thickness=0.06,
+            color=util.hsl(0, 100, 80)))
         for i in range(10):
-            self.rig.joints.spine[i] = Joint(self, 0.04, 0.04, 0.2, self.rig.joints.root if i == 0 else self.rig.joints.spine[i - 1])
+            self.rig.joints.spine[i] = Joint(self,
+                length=0.2,
+                thickness=0.04,
+                parent=self.rig.joints.root if i == 0 else self.rig.joints.spine[i - 1],
+                color=util.hsl(util.lerp(i, 0, 9, 120, 180), 100, 80))
 
         # add some lights
         self.add_light(QVector3D(-20.0, 20.0, -20.0), 1.0) # upper right key light

@@ -4,6 +4,8 @@ from collections import defaultdict
 
 from PyQt5.QtGui import QMatrix4x4
 
+from . import util
+
 
 class Rig(object):
     class Joints(object):
@@ -49,18 +51,20 @@ class Rig(object):
         self.joints.root.update_transform()
 
 class Joint(object):
-    def __init__(self, ani, width, height, depth, parent=None):
+    def __init__(self, ani, length, thickness, parent=None, color=util.hsl(0, 0, 50)):
         self.parent = parent
         if self.parent is not None:
             self.parent.children.add(self)
         self.children = set()
-        self._width, self._height, self._depth = width, height, depth
-        self._obj_transform = ani.add_rgb_cube()
+        self.length = length
+        self.thickness = thickness
+        self._obj_transform = ani.add_cone(color=color)
         self._shape_transform = QMatrix4x4()
-        self._shape_transform.scale(width, height, depth)
+        self._shape_transform.scale(thickness, thickness, length)
         self._shape_transform.translate(0, 0, 0.5)
+        self._shape_transform.rotate(90, 1, 0, 0)
         self.joint_pos = QMatrix4x4()
-        self.joint_pos.translate(0, 0, depth)
+        self.joint_pos.translate(0, 0, length)
         self.local_transform = QMatrix4x4()
         self._global_transform = QMatrix4x4()
 
