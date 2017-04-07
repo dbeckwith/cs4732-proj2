@@ -254,6 +254,11 @@ class Animation(object):
         camera = self.view.camera()
         camera.setPosition(camera_position)
         camera.setViewCenter(camera_lookat)
+        look_vector = camera_position - camera_lookat
+        if look_vector.x() == 0.0 and look_vector.z() == 0.0:
+            camera.setUpVector(QVector3D(0, 0, 1))
+        else:
+            camera.setUpVector(QVector3D(0, 1, 0))
 
         self.view.setRootEntity(self.scene)
 

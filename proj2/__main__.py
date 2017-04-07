@@ -23,6 +23,8 @@ class Proj2Ani(Animation):
         self.setup_scene(
             background_color=util.hsl(0, 0, 0),
             camera_position=QVector3D(1.0, 4.0, -10.0),
+            # camera_position=QVector3D(0.0, 10.0, 0.0),
+            # camera_position=QVector3D(0.0, 0.0, -10.0),
             camera_lookat=QVector3D(0.0, 0.0, 0.0))
 
     def make_scene(self):
@@ -35,13 +37,18 @@ class Proj2Ani(Animation):
         ground = self.add_plane()
         ground.setScale(10.0)
 
+        self.path_radius = 1.3
+        self.spine_len = 0.2
+
+        self.spine_bend_angle = 2 * math.asin(self.spine_len / (2 * self.path_radius))
+
         self.rig = Rig(Joint(self,
-            length=0.2,
+            length=self.spine_len,
             thickness=0.06,
             color=util.hsl(0, 100, 80)))
         for i in range(10):
             self.rig.joints.spine[i] = Joint(self,
-                length=0.2,
+                length=self.spine_len,
                 thickness=0.04,
                 parent=self.rig.joints.root if i == 0 else self.rig.joints.spine[i - 1],
                 color=util.hsl(util.lerp(i, 0, 9, 120, 180), 100, 80))
@@ -54,20 +61,34 @@ class Proj2Ani(Animation):
         """
         Overriddes Animation.update
         """
-        self.rig.reset()
-        self.rig.joints.root.local_transform.rotate(-90, 1, 0, 0)
         spine = [self.rig.joints.root] + list(self.rig.joints.spine)
+        wave_thetas = []
+        wave_angles = []
         prev_global_angle = 0
-        for i, s in enumerate(spine):
+        for i in range(len(spine)):
             phase = util.lerp(t, 0, 1, 0, 2 * math.pi)
-            magnitude = util.lerp(math.sin(util.lerp(t, 0, 10, 0, 2 * math.pi)), -1, 1, 0.5, 1.5)
+            magnitude = 0.5
             theta = util.lerp(i + phase, 0, len(spine), 0, 2 * math.pi)
+            wave_thetas.append(theta)
             global_angle = math.atan(magnitude * math.cos(theta))
             local_angle = global_angle - prev_global_angle
+            wave_angles.append(local_angle)
             prev_global_angle = global_angle
-            s.local_transform.rotate(
-                util.rad2deg(local_angle),
-                0, 1, 0)
+
+        self.rig.reset()
+        self.rig.joints.root.local_transform.translate(0, 0.5 + math.cos(wave_thetas[0]) * magnitude * self.spine_len, 0)
+        self.rig.joints.root.local_transform.rotate(util.rad2deg(util.lerp(t, 0, 8.5, 0, 2 * math.pi)), 0, -1, 0)
+        self.rig.joints.root.local_transform.translate(self.path_radius, 0, 0)
+        self.rig.joints.root.local_transform.translate(0, 0, -self.spine_len / 2)
+
+        for i, joint in enumerate(spine):
+            joint.local_transform.rotate(
+                util.rad2deg(wave_angles[i]),
+                1, 0, 0)
+            if i != 0:
+                joint.local_transform.rotate(
+                    util.rad2deg(self.spine_bend_angle),
+                    0, -1, 0)
         self.rig.update()
 
 
