@@ -6,7 +6,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QVector3D, QQuaternion
 from PyQt5.Qt3DCore import QEntity, QTransform
 from PyQt5.Qt3DRender import QPointLight
-from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QCylinderMesh, QPhongMaterial
+from PyQt5.Qt3DExtras import Qt3DWindow, QCuboidMesh, QSphereMesh, QPlaneMesh, QCylinderMesh, QPhongMaterial
 from PyQt5.QtQml import QQmlComponent, QQmlEngine
 
 from . import util
@@ -84,23 +84,15 @@ class Animation(object):
         light_entity.addComponent(light)
         light_entity.addComponent(light_transform)
 
-    def add_rgb_cube(self, w, h, d):
+    def add_rgb_cube(self):
         """
         Helper method to add an RGB-textured cube to the scene.
-
-        Arguments:
-            w: float, the width of the cube
-            h: float, the height of the cube
-            d: float, the depth of the cube
 
         Returns:
             the QTransform of the cube
         """
         cube_entity = QEntity(self.scene)
         cube_mesh = QCuboidMesh()
-        cube_mesh.setXExtent(w)
-        cube_mesh.setYExtent(h)
-        cube_mesh.setZExtent(d)
         cube_entity.addComponent(cube_mesh)
         cube_transform = QTransform(self.scene)
         cube_entity.addComponent(cube_transform)
@@ -112,28 +104,45 @@ class Animation(object):
 
         return cube_transform
 
-    def add_sphere(self, r):
+    def add_sphere(self):
         """
         Helper method to add a sphere to the scene.
-
-        Arguments:
-            r: float, the radius of the sphere
 
         Returns:
             the QTransform of the sphere
         """
         sphere_entity = QEntity(self.scene)
         sphere_mesh = QSphereMesh()
-        sphere_mesh.setRadius(r)
+
         sphere_entity.addComponent(sphere_mesh)
         sphere_transform = QTransform(self.scene)
         sphere_entity.addComponent(sphere_transform)
         if not hasattr(self, 'sphere_material'):
             self.sphere_material = QPhongMaterial(self.scene)
-            self.sphere_material.setAmbient(util.hsl(0, 0, 50))
+            self.sphere_material.setDiffuse(util.hsl(0, 0, 50))
         sphere_entity.addComponent(self.sphere_material)
 
         return sphere_transform
+
+    def add_plane(self):
+        """
+        Helper method to add a plane to the scene.
+
+        Returns:
+            the QTransform of the plane
+        """
+        plane_entity = QEntity(self.scene)
+        plane_mesh = QPlaneMesh()
+
+        plane_entity.addComponent(plane_mesh)
+        plane_transform = QTransform(self.scene)
+        plane_entity.addComponent(plane_transform)
+        if not hasattr(self, 'plane_material'):
+            self.plane_material = QPhongMaterial(self.scene)
+            self.plane_material.setDiffuse(util.hsl(0, 0, 50))
+        plane_entity.addComponent(self.plane_material)
+
+        return plane_transform
 
     def add_path(self, *pts):
         """
